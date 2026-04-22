@@ -31,6 +31,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [view, setView] = useState<'log' | 'dashboard'>('log')
   const [msg, setMsg] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => { fetchEntries() }, [])
 
@@ -59,16 +61,23 @@ export default function Home() {
       await fetchEntries()
       setMsg('Time logged!')
       setView('dashboard')
-    } catch (e) {
+    } catch {
       setMsg('Error saving. Please try again.')
     }
     setLoading(false)
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this entry?')) return
-    await fetch('/api/entries?id=' + id, { method: 'DELETE' })
-    await fetchEntries()
+  async function confirmDelete() {
+    if (!confirmDeleteId) return
+    setDeleting(true)
+    try {
+      await fetch('/api/entries?id=' + confirmDeleteId, { method: 'DELETE' })
+      await fetchEntries()
+    } catch {
+      // silent
+    }
+    setConfirmDeleteId(null)
+    setDeleting(false)
   }
 
   const totalByPerson = PEOPLE.map(p => ({
@@ -87,20 +96,53 @@ export default function Home() {
     fontSize: 14, boxSizing: 'border-box',
   }
 
+  const entryToDelete = entries.find(e => e.id === confirmDeleteId)
+
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 20px' }}>
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
+        }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 28, maxWidth: 400, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#111827' }}>Delete this entry?</h3>
+            <p style={{ margin: '0 0 20px', fontSize: 14, color: '#6b7280', lineHeight: 1.5 }}>
+              {entryToDelete ? `${entryToDelete.date} · ${entryToDelete.person} · ${entryToDelete.hours}h · ${entryToDelete.category}` : ''}
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 600, fontSize: 14, cursor: deleting ? 'not-allowed' : 'pointer' }}
+              >
+                {deleting ? 'Deleting...' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>
           Onboarding Time Tracker
         </h1>
-        <p style={{ color: '#6b7280', marginTop: 6, fontSize: 14, margin: '6px 0 0' }}>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: '6px 0 0' }}>
           Ali & Elizabeth — client onboarding hours
         </p>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid #e5e7eb', paddingBottom: 0 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid #e5e7eb' }}>
         {(['log', 'dashboard'] as const).map(v => (
           <button key={v} onClick={() => setView(v)} style={{
             padding: '8px 18px', border: 'none', cursor: 'pointer', fontWeight: 600,
@@ -141,8 +183,8 @@ export default function Home() {
                   value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Notes (optional)</label>
-                <input type="text" style={inp} placeholder="What did you work on?"
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Client Name / Notes</label>
+                <input type="text" style={inp} placeholder="Client name and what you worked on"
                   value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
@@ -177,7 +219,7 @@ export default function Home() {
 
           {/* By category */}
           <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid #e5e7eb', marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>By Category</h3>
+            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>By Category</h3>
             {totalByCategory.filter(c => c.hours > 0).length === 0
               ? <p style={{ color: '#9ca3af', margin: 0, fontSize: 14 }}>No entries yet.</p>
               : totalByCategory.filter(c => c.hours > 0).map(c => (
@@ -191,7 +233,7 @@ export default function Home() {
 
           {/* Entries table */}
           <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid #e5e7eb' }}>
-            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>All Entries</h3>
+            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>All Entries</h3>
             {entries.length === 0
               ? <p style={{ color: '#9ca3af', margin: 0, fontSize: 14 }}>No entries yet. Log some time!</p>
               : (
@@ -199,7 +241,7 @@ export default function Home() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
-                        {['Date', 'Person', 'Category', 'Hours', 'Notes', ''].map(h => (
+                        {['Date', 'Person', 'Category', 'Hours', 'Client / Notes', ''].map(h => (
                           <th key={h} style={{ textAlign: 'left', padding: '8px 12px', color: '#9ca3af', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #e5e7eb' }}>{h}</th>
                         ))}
                       </tr>
@@ -209,11 +251,15 @@ export default function Home() {
                         <tr key={e.id}>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151', whiteSpace: 'nowrap' }}>{e.date}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151' }}>{e.person}</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280', maxWidth: 220 }}>{e.category}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280', maxWidth: 200 }}>{e.category}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#111827', fontWeight: 700 }}>{e.hours}h</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#9ca3af' }}>{e.notes || '—'}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280' }}>{e.notes || '—'}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb' }}>
-                            <button onClick={() => handleDelete(e.id)} style={{ background: 'transparent', border: 'none', color: '#d1d5db', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+                            <button
+                              onClick={() => setConfirmDeleteId(e.id)}
+                              style={{ background: 'transparent', border: 'none', color: '#d1d5db', cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1 }}
+                              title="Delete entry"
+                            >✕</button>
                           </td>
                         </tr>
                       ))}
