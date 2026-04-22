@@ -82,72 +82,74 @@ export default function Home() {
   const grandTotal = entries.reduce((s, e) => s + e.hours, 0)
 
   const inp: React.CSSProperties = {
-    width: '100%', padding: '10px 12px', borderRadius: 8,
-    border: '1px solid #1e2a3a', background: '#0a0f1e', color: '#fff',
+    width: '100%', padding: '9px 12px', borderRadius: 8,
+    border: '1px solid #e5e7eb', background: '#fff', color: '#111827',
     fontSize: 14, boxSizing: 'border-box',
   }
 
   return (
-    <div style={{ maxWidth: 920, margin: '0 auto', padding: '32px 16px' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: '#fff', margin: 0 }}>
-          ⏱ Onboarding Time Tracker
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 20px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>
+          Onboarding Time Tracker
         </h1>
-        <p style={{ color: '#8892a4', marginTop: 6, fontSize: 14 }}>
-          Track client onboarding hours — Ali & Elizabeth
+        <p style={{ color: '#6b7280', marginTop: 6, fontSize: 14, margin: '6px 0 0' }}>
+          Ali & Elizabeth — client onboarding hours
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid #e5e7eb', paddingBottom: 0 }}>
         {(['log', 'dashboard'] as const).map(v => (
           <button key={v} onClick={() => setView(v)} style={{
-            padding: '9px 20px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            fontWeight: 600, fontSize: 14,
-            background: view === v ? '#3b82f6' : '#131c2e',
-            color: view === v ? '#fff' : '#8892a4',
+            padding: '8px 18px', border: 'none', cursor: 'pointer', fontWeight: 600,
+            fontSize: 14, background: 'transparent', borderBottom: view === v ? '2px solid #111827' : '2px solid transparent',
+            color: view === v ? '#111827' : '#9ca3af', marginBottom: -1,
           }}>
             {v === 'log' ? '+ Log Time' : `Dashboard (${entries.length})`}
           </button>
         ))}
       </div>
 
+      {/* Log Time Form */}
       {view === 'log' && (
-        <div style={{ background: '#131c2e', borderRadius: 12, padding: 24, border: '1px solid #1e2a3a' }}>
+        <div style={{ background: '#fff', borderRadius: 12, padding: 28, border: '1px solid #e5e7eb' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#8892a4', fontWeight: 600 }}>Person</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Person</label>
                 <select style={inp} value={form.person} onChange={e => setForm(f => ({ ...f, person: e.target.value }))}>
                   {PEOPLE.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#8892a4', fontWeight: 600 }}>Date</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Date</label>
                 <input type="date" style={inp} value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
               </div>
             </div>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#8892a4', fontWeight: 600 }}>Category</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Category</label>
               <select style={inp} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, marginBottom: 22 }}>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#8892a4', fontWeight: 600 }}>Hours</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Hours</label>
                 <input type="number" step="0.25" min="0.25" style={inp} placeholder="e.g. 1.5"
                   value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#8892a4', fontWeight: 600 }}>Notes (optional)</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: '#374151', fontWeight: 600 }}>Notes (optional)</label>
                 <input type="text" style={inp} placeholder="What did you work on?"
                   value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
-            {msg && <p style={{ color: msg.includes('Error') ? '#ef4444' : '#22c55e', marginBottom: 12, fontSize: 14 }}>{msg}</p>}
+            {msg && <p style={{ color: msg.includes('Error') ? '#dc2626' : '#16a34a', marginBottom: 14, fontSize: 14 }}>{msg}</p>}
             <button type="submit" disabled={loading} style={{
-              background: loading ? '#1e2a3a' : '#3b82f6', color: '#fff', border: 'none',
-              padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: 15,
+              background: loading ? '#d1d5db' : '#111827', color: '#fff', border: 'none',
+              padding: '11px 28px', borderRadius: 8, fontWeight: 600, fontSize: 15,
               cursor: loading ? 'not-allowed' : 'pointer', width: '100%',
             }}>
               {loading ? 'Saving...' : 'Log Time'}
@@ -156,58 +158,62 @@ export default function Home() {
         </div>
       )}
 
+      {/* Dashboard */}
       {view === 'dashboard' && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
-            <div style={{ background: '#131c2e', borderRadius: 10, padding: '16px 20px', border: '1px solid #1e2a3a' }}>
-              <div style={{ fontSize: 28, fontWeight: 700, color: '#3b82f6' }}>{grandTotal.toFixed(1)}h</div>
-              <div style={{ fontSize: 12, color: '#8892a4', marginTop: 2 }}>Total Hours</div>
+          {/* Stat cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
+            <div style={{ background: '#fff', borderRadius: 10, padding: '18px 20px', border: '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: 26, fontWeight: 700, color: '#111827' }}>{grandTotal.toFixed(1)}h</div>
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Total Hours</div>
             </div>
             {totalByPerson.map(p => (
-              <div key={p.person} style={{ background: '#131c2e', borderRadius: 10, padding: '16px 20px', border: '1px solid #1e2a3a' }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#3b82f6' }}>{p.hours.toFixed(1)}h</div>
-                <div style={{ fontSize: 12, color: '#8892a4', marginTop: 2 }}>{p.person}</div>
+              <div key={p.person} style={{ background: '#fff', borderRadius: 10, padding: '18px 20px', border: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: 26, fontWeight: 700, color: '#111827' }}>{p.hours.toFixed(1)}h</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{p.person}</div>
               </div>
             ))}
           </div>
 
-          <div style={{ background: '#131c2e', borderRadius: 12, padding: 24, border: '1px solid #1e2a3a', marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 16px', color: '#fff', fontSize: 15 }}>Hours by Category</h3>
+          {/* By category */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid #e5e7eb', marginBottom: 20 }}>
+            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>By Category</h3>
             {totalByCategory.filter(c => c.hours > 0).length === 0
-              ? <p style={{ color: '#8892a4', margin: 0, fontSize: 14 }}>No entries yet.</p>
+              ? <p style={{ color: '#9ca3af', margin: 0, fontSize: 14 }}>No entries yet.</p>
               : totalByCategory.filter(c => c.hours > 0).map(c => (
-                <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid #1a2235', fontSize: 14 }}>
-                  <span style={{ color: '#cbd5e1' }}>{c.category}</span>
-                  <span style={{ color: '#3b82f6', fontWeight: 700 }}>{c.hours.toFixed(1)}h</span>
+                <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid #f3f4f6', fontSize: 14 }}>
+                  <span style={{ color: '#374151' }}>{c.category}</span>
+                  <span style={{ color: '#111827', fontWeight: 700 }}>{c.hours.toFixed(1)}h</span>
                 </div>
               ))
             }
           </div>
 
-          <div style={{ background: '#131c2e', borderRadius: 12, padding: 24, border: '1px solid #1e2a3a' }}>
-            <h3 style={{ margin: '0 0 16px', color: '#fff', fontSize: 15 }}>All Entries</h3>
+          {/* Entries table */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', border: '1px solid #e5e7eb' }}>
+            <h3 style={{ margin: '0 0 14px', color: '#111827', fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>All Entries</h3>
             {entries.length === 0
-              ? <p style={{ color: '#8892a4', margin: 0, fontSize: 14 }}>No entries yet. Log some time!</p>
+              ? <p style={{ color: '#9ca3af', margin: 0, fontSize: 14 }}>No entries yet. Log some time!</p>
               : (
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
                         {['Date', 'Person', 'Category', 'Hours', 'Notes', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: '#8892a4', fontSize: 12, fontWeight: 600, borderBottom: '1px solid #1e2a3a' }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', padding: '8px 12px', color: '#9ca3af', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #e5e7eb' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map(e => (
                         <tr key={e.id}>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235', fontSize: 14, whiteSpace: 'nowrap' }}>{e.date}</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235', fontSize: 14 }}>{e.person}</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235', fontSize: 13, maxWidth: 220 }}>{e.category}</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235', fontSize: 14, color: '#3b82f6', fontWeight: 700 }}>{e.hours}h</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235', fontSize: 13, color: '#8892a4' }}>{e.notes || '—'}</td>
-                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #1a2235' }}>
-                            <button onClick={() => handleDelete(e.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 700, fontSize: 16, padding: 0 }}>✕</button>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151', whiteSpace: 'nowrap' }}>{e.date}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151' }}>{e.person}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280', maxWidth: 220 }}>{e.category}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#111827', fontWeight: 700 }}>{e.hours}h</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#9ca3af' }}>{e.notes || '—'}</td>
+                          <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb' }}>
+                            <button onClick={() => handleDelete(e.id)} style={{ background: 'transparent', border: 'none', color: '#d1d5db', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
                           </td>
                         </tr>
                       ))}
