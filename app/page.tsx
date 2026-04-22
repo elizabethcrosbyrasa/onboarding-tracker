@@ -60,7 +60,7 @@ export default function Home() {
       id: Date.now().toString(),
     }
 
-    // Optimistic: show it immediately
+    // Optimistic: show immediately
     setEntries(prev => [...prev, newEntry])
     setForm(f => ({ ...f, hours: '', notes: '' }))
     setLoading(true)
@@ -75,11 +75,10 @@ export default function Home() {
       })
       if (!res.ok) throw new Error(await res.text())
       setMsg({ text: 'Saved!', type: 'ok' })
-      // Re-sync from server to confirm
       await fetchEntries()
     } catch (err) {
       console.error('save error', err)
-      // Rollback optimistic update
+      // Rollback
       setEntries(prev => prev.filter(e => e.id !== newEntry.id))
       setMsg({ text: 'Error saving — please try again.', type: 'err' })
       setView('log')
@@ -99,7 +98,6 @@ export default function Home() {
     try {
       const res = await fetch('/api/entries?id=' + confirmDeleteId, { method: 'DELETE' })
       if (!res.ok) throw new Error(await res.text())
-      // Re-sync to confirm
       await fetchEntries()
     } catch (err) {
       console.error('delete error', err)
@@ -145,15 +143,14 @@ export default function Home() {
                 : ''}
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
-              >Cancel</button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleting}
-                style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 600, fontSize: 14, cursor: deleting ? 'not-allowed' : 'pointer' }}
-              >{deleting ? 'Deleting...' : 'Yes, delete'}</button>
+              <button onClick={() => setConfirmDeleteId(null)}
+                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={confirmDelete} disabled={deleting}
+                style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 600, fontSize: 14, cursor: deleting ? 'not-allowed' : 'pointer' }}>
+                {deleting ? 'Deleting...' : 'Yes, delete'}
+              </button>
             </div>
           </div>
         </div>
@@ -165,7 +162,7 @@ export default function Home() {
         <p style={{ color: '#6b7280', fontSize: 14, margin: '6px 0 0' }}>Ali & Elizabeth — client onboarding hours</p>
       </div>
 
-      {/* Toast message */}
+      {/* Toast */}
       {msg && (
         <div style={{
           marginBottom: 16, padding: '10px 16px', borderRadius: 8, fontSize: 14, fontWeight: 500,
@@ -280,18 +277,15 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {[...entries].sort((a, b) => b.date.localeCompare(a.date)).map(e => (
-                        <tr key={e.id} style={{ opacity: confirmDeleteId === e.id ? 0.4 : 1, transition: 'opacity 0.15s' }}>
+                        <tr key={e.id}>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151', whiteSpace: 'nowrap' }}>{e.date}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#374151' }}>{e.person}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280', maxWidth: 200 }}>{e.category}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 14, color: '#111827', fontWeight: 700 }}>{e.hours}h</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb', fontSize: 13, color: '#6b7280' }}>{e.notes || '—'}</td>
                           <td style={{ padding: '11px 12px', borderBottom: '1px solid #f9fafb' }}>
-                            <button
-                              onClick={() => setConfirmDeleteId(e.id)}
-                              title="Delete entry"
-                              style={{ background: 'transparent', border: 'none', color: '#d1d5db', cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1 }}
-                            >✕</button>
+                            <button onClick={() => setConfirmDeleteId(e.id)} title="Delete entry"
+                              style={{ background: 'transparent', border: 'none', color: '#d1d5db', cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1 }}>✕</button>
                           </td>
                         </tr>
                       ))}
