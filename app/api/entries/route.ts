@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { put, head } from '@vercel/blob'
+import { put, head, del } from '@vercel/blob'
 
 const BLOB_KEY = 'onboarding-tracker/entries.json'
 
@@ -16,10 +16,16 @@ async function getEntries(): Promise<any[]> {
 }
 
 async function saveEntries(entries: any[]) {
+  // Delete existing blob first to allow overwrite
+  try {
+    const existing = await head(BLOB_KEY)
+    if (existing) await del(existing.url)
+  } catch {
+    // ignore if doesn't exist
+  }
   await put(BLOB_KEY, JSON.stringify(entries), {
     access: 'public',
     addRandomSuffix: false,
-    allowOverwrite: true,
   })
 }
 
