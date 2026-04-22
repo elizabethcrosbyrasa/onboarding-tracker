@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server'
-import { put, list, del } from '@vercel/blob'
+import { put, list } from '@vercel/blob'
 
-const BLOB_FILENAME = 'onboarding-tracker/entries.json'
+const BLOB_PATH = 'onboarding-tracker/entries.json'
 
 async function getEntries(): Promise<any[]> {
   try {
-    const { blobs } = await list({ prefix: BLOB_FILENAME })
+    const { blobs } = await list({ prefix: BLOB_PATH, limit: 1 })
     if (!blobs.length) return []
-    // Sort by uploadedAt to get the most recent
-    blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
-    const res = await fetch(blobs[0].url + '?t=' + Date.now())
+    const res = await fetch(blobs[0].url, { cache: 'no-store' })
     if (!res.ok) return []
     return await res.json()
   } catch (e) {
@@ -19,15 +17,10 @@ async function getEntries(): Promise<any[]> {
 }
 
 async function saveEntries(entries: any[]) {
-  // Delete all existing blobs with this prefix first
-  const { blobs } = await list({ prefix: BLOB_FILENAME })
-  if (blobs.length > 0) {
-    await del(blobs.map(b => b.url))
-  }
-  // Write fresh
-  await put(BLOB_FILENAME, JSON.stringify(entries), {
+  await put(BLOB_PATH, JSON.stringify(entries), {
     access: 'public',
     addRandomSuffix: false,
+    allowOverwrite: true,
   })
 }
 
@@ -42,7 +35,7 @@ export async function POST(req: Request) {
     const entries = await getEntries()
     entries.push(entry)
     await saveEntries(entries)
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, entry })
   } catch (e) {
     console.error('POST error:', e)
     return NextResponse.json({ error: String(e) }, { status: 500 })
@@ -53,10 +46,11 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'No id provided' }, { status: 400 })
     const entries = await getEntries()
     const filtered = entries.filter((e: any) => e.id !== id)
     await saveEntries(filtered)
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, remaining: filtered.length })
   } catch (e) {
     console.error('DELETE error:', e)
     return NextResponse.json({ error: String(e) }, { status: 500 })
